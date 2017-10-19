@@ -2,14 +2,21 @@ module Lib
     ( runServer    
     ) where
 
-import Control.Monad
+--import Control.Monad
 import Control.Concurrent
 import Network.Socket
 import System.IO
 
 
 stripr :: String -> String
-stripr = filter (/= '\r')
+stripr = filter $ (/= '\r')
+
+stripn :: String -> String
+stripn = filter $ (/= '\n')
+
+stripnr :: String -> String
+stripnr = stripn . stripr
+
 
 runServer :: PortNumber -> IO ()
 runServer port = do
@@ -22,7 +29,7 @@ runServer port = do
 mainLoop :: Socket -> IO ()
 mainLoop sock = do
   conn <- accept sock
-  forkIO (runConn conn)   
+  _ <- forkIO (runConn conn)   
   mainLoop sock
 
 
@@ -36,7 +43,7 @@ runConn (sock, addr) = do
 
 echo :: Handle -> IO ()
 echo handle = do
-  line <- stripr <$> hGetLine handle
+  line <- stripnr <$> hGetLine handle
   print line
   print $ stripr line  
   if (line == "exit")
